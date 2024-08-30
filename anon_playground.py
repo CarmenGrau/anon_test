@@ -42,42 +42,49 @@ default_system_prompt = """
         -El texto resultante ya enmascarado con la estructura "anonimizado": string, seguido de una coma ',' y una lista con las etiquetas y todas las entidades encontradas que correspondan a esa etiqueta, con la estructura "etiquetas": [{'<PER>': [string, string, string]}, {'<LOC>': string}, {'<NAT>': [string, string]}]
     """
 
-# st.markdown("""
-#     <style>
-#     .css-1v3fvcr {
-#         max-width: 100%;
-#     }
-#     </style>
-#     """, unsafe_allow_html=True)
+st.markdown("""
+    <style>
+    .css-1v3fvcr {
+        max-width: 100%;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 with st.container():
 
-    col1, col2 = st.columns([100, 40])
+    col1, col2 = st.columns([100, 60])
 
     with col1:
-        # st.markdown('<div class="css-1v3fvcr">', unsafe_allow_html=True)
+        st.markdown('<div class="css-1v3fvcr">', unsafe_allow_html=True)
 
         system_prompt = st.text_area("System prompt:", value=default_system_prompt, height=200, disabled=False)
       
-        user_input_references = st.text_area("Add your references (if any) here:", height=200, max_chars=2000)
-        user_input = st.text_area("Enter the text you want to anonymize here:", height=200, max_chars=2000)
+        user_input_reference = st.text_area("Add your references (if any) here:", height=200, max_chars=2000)
+
+        user_input = st.text_area("Enter the text you want to anonymize here:", height=200, max_chars=9000)
         
-        # st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
-        # st.markdown('<div class="css-1v3fvcr">', unsafe_allow_html=True)
+        st.markdown('<div class="css-1v3fvcr">', unsafe_allow_html=True)
 
         if st.button("Anonymize"):
             if user_input:
                 endpoint = "http://192.168.100.67:8000/anon_test/process"
-                data = {'text_to_anonymize': user_input}  
+                if user_input_reference:
+                    data = {'text_to_anonymize': user_input,
+                            'reference': user_input_reference}
+                    print(f'Reference entered: {user_input_reference}')
+                else:
+                    data = {'text_to_anonymize': user_input}
+ 
                 response = requests.post(endpoint, json=data)
-                time.sleep(5)
+                
                 try:
                     response_json = response.json()
                     anonymized_text = response_json.get("llm_response", "No anonymized text found")
                     print(f'Success! The anonymized text was received!')
-                    anon_output = st.text_area("Anonymized text:", value=anonymized_text, height=300)
+                    anon_output = st.text_area("Anonymized text:", value=anonymized_text, height=200)
                     
 
                 except json.JSONDecodeError as e:
@@ -91,5 +98,5 @@ with st.container():
         else:
             anon_output = st.text_area("Anonymized text:", value="", height=300)
         
-        # st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
    
